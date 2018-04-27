@@ -84,17 +84,18 @@ def train_tagger(args):
 
   with Timer('Building model'):
     model = BiLSTMTaggerModel(data, config=config)  
-    for param in model.params:
+    for param in model.params: #params : 러닝 파라미터 모델에서 학습해야될 weight, bias.
       print param, param.name, param.shape.eval()
     loss_function = model.get_loss_function()
     eval_function = model.get_eval_function()
-  
+
+  #training 후 다음 train을 위해 초기화 시키고 training 시킨 것을 평가한다
   while epoch < config.max_epochs:
     with Timer("Epoch%d" % epoch) as timer:
       train_data = data.get_training_data(include_last_batch=True)
       for batched_tensor in train_data:
         x, y, _, weights = batched_tensor
-        loss = loss_function(x, weights, y)
+        loss = loss_function(x, weights, y) #loss를 계산해서 최적화를 시켜 업데이트를 시키는 함수
         train_loss += loss
         i += 1
         global_step += 1
@@ -103,6 +104,7 @@ def train_tagger(args):
         
     train_loss = train_loss / i
     print("Epoch {}, steps={}, loss={:.3f}".format(epoch, i, train_loss))
+    #초기화
     i = 0
     epoch += 1
     train_loss = 0.0

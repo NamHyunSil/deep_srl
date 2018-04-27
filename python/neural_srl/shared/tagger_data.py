@@ -12,13 +12,20 @@ def tensorize(sentence, max_length):
               such as predicate or supertag features.
       - max_length: The maximum length of sequences, used for padding.
   """
+  #sentence = [[1,2,3],[4,5,6],[7,8,9],[10,11,12]] 전체 n개  [1,2,3] = s1   [10,11,12] = sk
+  #max_length = 10
+  #x = [[1,4,7],[2,5,8],[3,6,9]]  n-1*n-1   3*3
   x = np.array([t for t in zip(*sentence[:-1])])
+  #y = [[10,11,12]]
   y = np.array(sentence[-1])
   weights = (y >= 0).astype(float)
+  #x = [[1,4,7],[2,5,8], [3,6,9],['','',''],['','',''],['','',''],['','',''],['','',''],['','',''],['','','']]        10*3
   x.resize([max_length, x.shape[1]])
+  #y = [[10,11,12],['','',''],['','',''],['','',''],['','',''],['','',''],['','',''],['','',''],['','',''],['','','']] 10
   y.resize([max_length])
   weights.resize([max_length])
   return x, np.absolute(y), len(sentence[0]), weights
+  #TODO: y(라벨)값에 왜 절대값을 시키는가
   
 class TaggerData(object):
   def __init__(self, config, train_sents, dev_sents, word_dict, label_dict, embeddings, embedding_shapes,
@@ -46,17 +53,21 @@ class TaggerData(object):
     """ Get shuffled training samples. Called at the beginning of each epoch.
     """
     # TODO: Speed up: Use variable size batches (different max length).  
+    #train_sents 리스트의 인덱스 list를 만듦
     train_ids = range(len(self.train_sents))
     random.shuffle(train_ids)
-    
+    #train_ids 배치사이즈 만큼 잘랐을 때 마지막 배치가 남았을 경우 마지막 배치를 제거1
     if not include_last_batch:
       num_batches = len(train_ids) // self.batch_size
       train_ids = train_ids[:num_batches * self.batch_size]
       
     num_samples = len(self.train_sents)
+    #train_ids에 maapping된 train_tensors(train_sents를 텐서화) 리스트화
     tensors = [self.train_tensors[t] for t in train_ids]
-    batched_tensors = [tensors[i: min(i+self.batch_size, num_samples)]
+    #tensors를 배치만큼씩 잘라 리스트화
+    batched_tensors = [tensors[i: min(i+self.batch_size, num_samples)]  #마지막 배치가 남았을 경우 마지막 배치를 제거2
                for i in xrange(0, num_samples, self.batch_size)]
+    #batched_tensors의 원소를 하나씩 꺼내어 zip시킨 후 정렬
     results = [zip(*t) for t in batched_tensors]
     
     print("Extracted {} samples and {} batches.".format(num_samples, len(batched_tensors)))

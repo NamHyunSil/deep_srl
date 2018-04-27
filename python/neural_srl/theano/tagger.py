@@ -44,11 +44,12 @@ class BiLSTMTaggerModel(object):
     
     self.softmax_layer = SoftmaxLayer(self.lstm_hidden_size, self.label_space_size)
     self.params.extend(self.softmax_layer.params)
-    
+    #TODO: 더보기
     # Build model
     # Shape of x: [seq_len, batch_size, num_features]
     self.x0 = tensor.ltensor3('x')
     self.y0 = tensor.lmatrix('y')
+    #TODO: mask란?
     self.mask0 = tensor.matrix('mask', dtype=floatX)
     self.is_train = tensor.bscalar('is_train')
     
